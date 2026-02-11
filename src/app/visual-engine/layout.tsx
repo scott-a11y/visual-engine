@@ -107,13 +107,16 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
                         </Button>
                     </div>
 
-                    {/* Mobile Menu Toggle */}
-                    <button
-                        className="md:hidden p-2 text-white/60"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        {mobileMenuOpen ? <X /> : <Menu />}
-                    </button>
+                    {/* Mobile: Email + Menu Toggle */}
+                    <div className="md:hidden flex items-center gap-3">
+                        <span className="text-[10px] text-white/40 truncate max-w-[140px]">{user?.email}</span>
+                        <button
+                            className="p-2 text-white/60"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X /> : <Menu />}
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -121,6 +124,16 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
             {mobileMenuOpen && (
                 <div className="fixed inset-0 z-40 bg-black/90 backdrop-blur-2xl md:hidden pt-20 px-6">
                     <nav className="flex flex-col gap-4">
+                        {/* User info */}
+                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-sm">
+                                {user?.email?.[0]?.toUpperCase() || 'C'}
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-white">Chad E. Davis</p>
+                                <p className="text-[11px] text-white/40">{user?.email}</p>
+                            </div>
+                        </div>
                         {navItems.map((item) => (
                             <Link
                                 key={item.href}
