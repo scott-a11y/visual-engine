@@ -17,7 +17,9 @@ import {
     Plus,
     RefreshCw,
     FileUp,
-    LayoutGrid
+    LayoutGrid,
+    X,
+    ZoomIn
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -35,6 +37,7 @@ export default function ProjectDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'gallery' | 'plans'>('gallery');
+    const [lightboxAsset, setLightboxAsset] = useState<Asset | null>(null);
 
     const fetchProjectData = async () => {
         if (isDemoMode()) {
@@ -225,8 +228,8 @@ export default function ProjectDetailsPage() {
                 <button
                     onClick={() => setActiveTab('gallery')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'gallery'
-                            ? 'bg-white/10 text-white shadow-lg'
-                            : 'text-white/40 hover:text-white/60'
+                        ? 'bg-white/10 text-white shadow-lg'
+                        : 'text-white/40 hover:text-white/60'
                         }`}
                 >
                     <LayoutGrid className="w-4 h-4" />
@@ -235,8 +238,8 @@ export default function ProjectDetailsPage() {
                 <button
                     onClick={() => setActiveTab('plans')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'plans'
-                            ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 shadow-lg'
-                            : 'text-white/40 hover:text-white/60'
+                        ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 shadow-lg'
+                        : 'text-white/40 hover:text-white/60'
                         }`}
                 >
                     <FileUp className="w-4 h-4" />
@@ -295,13 +298,24 @@ export default function ProjectDetailsPage() {
 
                                                 {/* Overlay Actions */}
                                                 {asset.status === 'complete' && (
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                                    <div
+                                                        onClick={() => setLightboxAsset(asset)}
+                                                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 cursor-pointer"
+                                                    >
                                                         <Button size="icon" className="rounded-full bg-white text-black hover:scale-110 transition-transform">
-                                                            <Download className="w-5 h-5" />
+                                                            <ZoomIn className="w-5 h-5" />
                                                         </Button>
-                                                        <Button size="icon" className="rounded-full bg-white/20 backdrop-blur-md text-white hover:scale-110 transition-transform">
-                                                            <ExternalLink className="w-5 h-5" />
-                                                        </Button>
+                                                        <a
+                                                            href={asset.url || ''}
+                                                            download
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <Button size="icon" className="rounded-full bg-white/20 backdrop-blur-md text-white hover:scale-110 transition-transform">
+                                                                <Download className="w-5 h-5" />
+                                                            </Button>
+                                                        </a>
                                                     </div>
                                                 )}
                                             </div>
@@ -359,6 +373,53 @@ export default function ProjectDetailsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Lightbox Modal */}
+            {lightboxAsset && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center animate-in fade-in duration-300"
+                    onClick={() => setLightboxAsset(null)}
+                    onKeyDown={(e) => e.key === 'Escape' && setLightboxAsset(null)}
+                >
+                    <div className="absolute top-6 right-6 flex gap-3 z-10">
+                        <a
+                            href={lightboxAsset.url || ''}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Button size="icon" className="rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition">
+                                <Download className="w-5 h-5" />
+                            </Button>
+                        </a>
+                        <Button
+                            size="icon"
+                            onClick={() => setLightboxAsset(null)}
+                            className="rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition"
+                        >
+                            <X className="w-5 h-5" />
+                        </Button>
+                    </div>
+
+                    <div className="max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                        {lightboxAsset.type === 'image' ? (
+                            <img
+                                src={lightboxAsset.url || ''}
+                                alt={lightboxAsset.prompt || 'Generated visual'}
+                                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+                            />
+                        ) : (
+                            <div className="w-[80vw] max-w-4xl aspect-video bg-black rounded-2xl flex items-center justify-center">
+                                <Play className="w-20 h-20 text-white/40" />
+                            </div>
+                        )}
+                        <p className="text-center text-xs text-white/40 mt-4 italic max-w-xl mx-auto">
+                            &quot;{lightboxAsset.prompt}&quot;
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -14,7 +14,19 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
+import { isDemoMode } from '@/lib/demo-data';
 import type { Company } from '@/lib/types/database';
+
+const DEMO_COMPANY: Company = {
+    id: 'demo-company',
+    name: 'Chad E. Davis Construction',
+    logo_url: null,
+    primary_color: '#f59e0b',
+    contact_email: 'chad@davisconstruction.com',
+    contact_phone: '(425) 555-0142',
+    website: 'davisconstruction.com',
+    created_at: new Date().toISOString(),
+};
 
 export default function BrandingCenterPage() {
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -32,12 +44,18 @@ export default function BrandingCenterPage() {
 
     useEffect(() => {
         async function fetchCompanies() {
+            if (isDemoMode()) {
+                setCompanies([DEMO_COMPANY]);
+                setLoading(false);
+                return;
+            }
             try {
                 const res = await fetch('/api/companies');
                 const data = await res.json();
-                setCompanies(data || []);
+                setCompanies(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error(err);
+                setCompanies([]);
             } finally {
                 setLoading(false);
             }

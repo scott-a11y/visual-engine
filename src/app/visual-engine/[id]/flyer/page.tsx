@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
+import { isDemoMode, DEMO_PROJECTS, DEMO_ASSETS } from '@/lib/demo-data';
 import type { Project, Asset, Company } from '@/lib/types/database';
 
 export default function ProjectFlyerPage() {
@@ -28,23 +29,38 @@ export default function ProjectFlyerPage() {
 
     useEffect(() => {
         async function fetchData() {
+            if (isDemoMode()) {
+                const demoProject = DEMO_PROJECTS.find(p => p.id === id) || DEMO_PROJECTS[0];
+                setProject(demoProject);
+                setAssets(DEMO_ASSETS.filter(a => a.status === 'complete') as any);
+                setCompany({
+                    id: 'demo-company',
+                    name: 'Chad E. Davis Construction',
+                    logo_url: null,
+                    primary_color: '#f59e0b',
+                    contact_email: 'chad@davisconstruction.com',
+                    contact_phone: '(425) 555-0142',
+                    website: 'davisconstruction.com',
+                    created_at: new Date().toISOString(),
+                } as Company);
+                setLoading(false);
+                return;
+            }
             try {
-                // Fetch Project
                 const projRes = await fetch(`/api/projects/${id}`);
                 const projData = await projRes.json();
                 const project = projData.data;
                 setProject(project);
 
-                // Fetch Assets
                 const assetsRes = await fetch(`/api/assets?projectId=${id}`);
                 const assets = await assetsRes.json();
-                setAssets(assets.filter((a: any) => a.status === 'complete'));
+                setAssets(Array.isArray(assets) ? assets.filter((a: any) => a.status === 'complete') : []);
 
-                // Fetch Company if project has one
                 if (project?.company_id) {
                     const compRes = await fetch(`/api/companies`);
                     const comps = await compRes.json();
-                    const comp = comps.find((c: any) => c.id === project.company_id);
+                    const arr = Array.isArray(comps) ? comps : [];
+                    const comp = arr.find((c: any) => c.id === project.company_id);
                     setCompany(comp || null);
                 }
             } catch (err) {
