@@ -11,7 +11,8 @@ import {
     LogOut,
     Menu,
     X,
-    Plus
+    Plus,
+    Hammer
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -57,13 +58,18 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
             {/* Header */}
             <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5 bg-black/20">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link href="/visual-engine" className="flex items-center gap-2 group">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Sparkles className="w-5 h-5 text-white" />
+                    <Link href="/visual-engine" className="flex items-center gap-3 group">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/20">
+                            <Hammer className="w-5 h-5 text-white" />
                         </div>
-                        <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-                            Visual Engine
-                        </span>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-sm tracking-tight bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent leading-tight">
+                                Chad E. Davis Construction
+                            </span>
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/30">
+                                Visual Engine
+                            </span>
+                        </div>
                     </Link>
 
                     {/* Desktop Nav */}

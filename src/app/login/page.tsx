@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Sparkles, Mail, Lock, ChevronRight, Loader2, ArrowRight } from 'lucide-react';
+import { Hammer, Mail, Lock, ChevronRight, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -40,20 +40,20 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Background Ambience */}
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[150px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-600/20 blur-[150px] rounded-full pointer-events-none" />
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-amber-600/15 blur-[150px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-amber-800/15 blur-[150px] rounded-full pointer-events-none" />
 
             {/* Logo Section */}
             <div className="mb-12 flex flex-col items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-1000">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-[0_0_30px_rgba(79,70,229,0.4)]">
-                    <Sparkles className="w-10 h-10 text-white" />
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.4)]">
+                    <Hammer className="w-10 h-10 text-white" />
                 </div>
                 <div className="text-center">
-                    <h1 className="text-4xl font-bold tracking-tighter bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-                        Visual Engine
+                    <h1 className="text-3xl font-bold tracking-tighter bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
+                        Chad E. Davis Construction
                     </h1>
-                    <p className="text-white/40 font-medium italic mt-1 uppercase tracking-widest text-[10px]">
-                        The Premiere Suite by Chad Davis
+                    <p className="text-white/40 font-medium mt-1 uppercase tracking-widest text-[10px]">
+                        Visual Engine — Marketing Suite
                     </p>
                 </div>
             </div>
@@ -111,7 +111,7 @@ export default function LoginPage() {
                     <Button
                         type="submit"
                         disabled={loading}
-                        className="w-full h-14 bg-white text-black hover:bg-white/90 rounded-2xl text-lg font-bold shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all active:scale-[0.98] group"
+                        className="w-full h-14 bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500 rounded-2xl text-lg font-bold shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all active:scale-[0.98] group"
                     >
                         {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                             <span className="flex items-center justify-center gap-2">

@@ -13,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Visual Engine | Chad Davis',
-  description: 'Premium AI-powered real estate marketing visual generator.',
+  title: 'Visual Engine | Chad E. Davis Construction',
+  description: 'AI-powered marketing visualization platform built for Chad E. Davis Construction. Generate stunning architectural renders, videos, and luxury marketing flyers.',
 };
 
 export default function RootLayout({
