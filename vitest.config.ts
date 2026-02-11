@@ -5,9 +5,14 @@ import path from 'path';
 export default defineConfig({
     plugins: [react()],
     test: {
-        environment: 'jsdom',
+        environment: 'happy-dom',
         globals: true,
         setupFiles: './src/test/setup.ts',
+        server: {
+            deps: {
+                inline: [/token/], // usually for some libraries, but let's try nothing first
+            }
+        }
     },
     resolve: {
         alias: {
