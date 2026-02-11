@@ -94,9 +94,9 @@ export class VisualEngineService {
             created_by: userId
         };
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('assets')
-            .insert(insertData as any)
+            .insert(insertData)
             .select()
             .single();
 
@@ -133,9 +133,9 @@ export class VisualEngineService {
             created_by: userId
         };
 
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('assets')
-            .insert(insertData as any)
+            .insert(insertData)
             .select()
             .single();
 
@@ -152,7 +152,7 @@ export class VisualEngineService {
      * Process real AI image generation via Gemini
      */
     private static async processImageGeneration(assetId: string, prompt: string) {
-        const supabase = (await createClient()) as SupabaseClient<Database>;
+        const supabase = await createClient();
 
         try {
             if (!this.hasValidApiKey()) {
@@ -169,9 +169,9 @@ export class VisualEngineService {
                 ];
                 const url = placeholders[Math.floor(Math.random() * placeholders.length)];
 
-                await supabase
+                await (supabase as any)
                     .from('assets')
-                    .update({ status: 'complete', url, metadata: { source: 'placeholder' } } as any)
+                    .update({ status: 'complete', url, metadata: { source: 'placeholder' } })
                     .eq('id', assetId);
                 return;
             }
@@ -192,22 +192,22 @@ export class VisualEngineService {
             // When Imagen 3 API becomes available, swap this for actual generation
             const url = `https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=90`;
 
-            await supabase
+            await (supabase as any)
                 .from('assets')
                 .update({
                     status: 'complete',
                     url,
                     metadata: { ai_description: aiDescription, model: 'gemini-2.0-flash-exp' }
-                } as any)
+                })
                 .eq('id', assetId);
 
             console.log(`[VisualEngine] Generation complete for asset ${assetId}`);
 
         } catch (error) {
             console.error(`[VisualEngine] Generation failed for asset ${assetId}:`, error);
-            await supabase
+            await (supabase as any)
                 .from('assets')
-                .update({ status: 'failed', metadata: { error: String(error) } } as any)
+                .update({ status: 'failed', metadata: { error: String(error) } })
                 .eq('id', assetId);
         }
     }
@@ -218,14 +218,14 @@ export class VisualEngineService {
     private static async processVideoGeneration(assetId: string) {
         setTimeout(async () => {
             try {
-                const supabase = (await createClient()) as SupabaseClient<Database>;
-                await supabase
+                const supabase = await createClient();
+                await (supabase as any)
                     .from('assets')
                     .update({
                         status: 'complete',
                         url: 'https://vjs.zencdn.net/v/oceans.mp4',
                         metadata: { source: 'placeholder', note: 'Veo 3 integration pending public API access' }
-                    } as any)
+                    })
                     .eq('id', assetId);
                 console.log(`[VisualEngine] Video placeholder ready for asset ${assetId}`);
             } catch (error) {
