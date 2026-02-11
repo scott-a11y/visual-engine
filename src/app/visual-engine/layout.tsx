@@ -15,6 +15,7 @@ import {
     Hammer
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { isDemoMode, DEMO_USER } from '@/lib/demo-data';
 import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +27,10 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
+        if (isDemoMode()) {
+            setUser(DEMO_USER as any);
+            return;
+        }
         async function getUser() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {

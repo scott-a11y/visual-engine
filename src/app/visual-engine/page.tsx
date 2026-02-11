@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
 import type { Project } from '@/lib/types/database';
+import { isDemoMode, DEMO_PROJECTS } from '@/lib/demo-data';
 
 export default function VisualEngineDashboard() {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -23,6 +24,11 @@ export default function VisualEngineDashboard() {
 
     useEffect(() => {
         async function fetchProjects() {
+            if (isDemoMode()) {
+                setProjects(DEMO_PROJECTS);
+                setLoading(false);
+                return;
+            }
             try {
                 const res = await fetch('/api/projects');
                 const data = await res.json();

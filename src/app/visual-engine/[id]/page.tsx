@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
 import { createClient } from '@/lib/supabase/client';
+import { isDemoMode, DEMO_PROJECTS, DEMO_ASSETS } from '@/lib/demo-data';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Project, Asset } from '@/lib/types/database';
 
@@ -32,6 +33,13 @@ export default function ProjectDetailsPage() {
     const [generating, setGenerating] = useState<string | null>(null); // 'image' | 'video'
 
     const fetchProjectData = async () => {
+        if (isDemoMode()) {
+            const demoProject = DEMO_PROJECTS.find(p => p.id === id);
+            setProject(demoProject || DEMO_PROJECTS[0]);
+            setAssets(DEMO_ASSETS.filter(a => a.project_id === id || a.project_id === DEMO_PROJECTS[0].id) as any);
+            setLoading(false);
+            return;
+        }
         try {
             const res = await fetch(`/api/projects/${id}`);
             if (!res.ok) throw new Error('Project not found');
@@ -50,6 +58,8 @@ export default function ProjectDetailsPage() {
 
     useEffect(() => {
         fetchProjectData();
+
+        if (isDemoMode()) return; // Skip realtime in demo mode
 
         // Initialize Realtime Subscription
         const supabase = createClient();
@@ -84,6 +94,45 @@ export default function ProjectDetailsPage() {
 
     const handleGenerate = async (type: 'image' | 'video') => {
         setGenerating(type);
+
+        if (isDemoMode()) {
+            // Simulate AI generation with realistic timing
+            const newAsset = {
+                id: `demo-${Date.now()}`,
+                project_id: id as string,
+                type,
+                provider: 'gemini',
+                prompt: type === 'image'
+                    ? 'Ultra-premium architectural photography, twilight golden hour, cinematic lighting'
+                    : 'Cinematic aerial drone flyover, Pacific Northwest luxury neighborhood',
+                status: 'processing' as const,
+                external_job_id: null,
+                url: null,
+                created_by: 'demo-user-001',
+                metadata: {},
+                created_at: new Date().toISOString(),
+            } as any;
+
+            setAssets(prev => [newAsset, ...prev]);
+
+            // Simulate processing → complete after 3 seconds
+            setTimeout(() => {
+                setAssets(prev => prev.map(a =>
+                    a.id === newAsset.id
+                        ? {
+                            ...a,
+                            status: 'complete',
+                            url: type === 'image'
+                                ? 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80'
+                                : 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80',
+                        }
+                        : a
+                ));
+                setGenerating(null);
+            }, 3000);
+            return;
+        }
+
         try {
             const endpoint = type === 'image' ? '/api/generate/image' : '/api/generate/video';
             const res = await fetch(endpoint, {
