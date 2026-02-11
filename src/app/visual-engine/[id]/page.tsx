@@ -39,6 +39,21 @@ export default function ProjectDetailsPage() {
     const [activeTab, setActiveTab] = useState<'gallery' | 'plans'>('gallery');
     const [lightboxAsset, setLightboxAsset] = useState<Asset | null>(null);
 
+    // Escape key closes lightbox
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setLightboxAsset(null);
+        };
+        if (lightboxAsset) {
+            document.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden';
+        }
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = '';
+        };
+    }, [lightboxAsset]);
+
     const fetchProjectData = async () => {
         if (isDemoMode()) {
             const demoProject = DEMO_PROJECTS.find(p => p.id === id);
@@ -382,17 +397,31 @@ export default function ProjectDetailsPage() {
                     onKeyDown={(e) => e.key === 'Escape' && setLightboxAsset(null)}
                 >
                     <div className="absolute top-6 right-6 flex gap-3 z-10">
-                        <a
-                            href={lightboxAsset.url || ''}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
+                        <Button
+                            size="icon"
+                            className="rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const url = lightboxAsset.url;
+                                if (!url) return;
+                                fetch(url)
+                                    .then(res => res.blob())
+                                    .then(blob => {
+                                        const a = document.createElement('a');
+                                        a.href = URL.createObjectURL(blob);
+                                        a.download = `render-${lightboxAsset.id}.${lightboxAsset.type === 'image' ? 'jpg' : 'mp4'}`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        setTimeout(() => {
+                                            URL.revokeObjectURL(a.href);
+                                            document.body.removeChild(a);
+                                        }, 500);
+                                    })
+                                    .catch(() => window.open(url, '_blank'));
+                            }}
                         >
-                            <Button size="icon" className="rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition">
-                                <Download className="w-5 h-5" />
-                            </Button>
-                        </a>
+                            <Download className="w-5 h-5" />
+                        </Button>
                         <Button
                             size="icon"
                             onClick={() => setLightboxAsset(null)}

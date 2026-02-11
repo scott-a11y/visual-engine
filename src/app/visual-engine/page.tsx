@@ -135,16 +135,29 @@ export default function VisualEngineDashboard() {
             ) : (
                 <div className="flex flex-col items-center justify-center py-20 bg-white/5 border border-dashed border-amber-500/20 rounded-3xl">
                     <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
-                        <Construction className="w-8 h-8 text-amber-400/40" />
+                        {searchQuery ? (
+                            <Search className="w-8 h-8 text-amber-400/40" />
+                        ) : (
+                            <Construction className="w-8 h-8 text-amber-400/40" />
+                        )}
                     </div>
-                    <h3 className="text-lg font-bold mb-1">Ready to build something stunning</h3>
-                    <p className="text-white/40 mb-6">Create your first project to start generating AI visuals</p>
-                    <Link href="/visual-engine/new">
-                        <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-full px-6 font-bold">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create First Project
-                        </Button>
-                    </Link>
+                    <h3 className="text-lg font-bold mb-1">
+                        {searchQuery ? 'No matching projects' : 'Ready to build something stunning'}
+                    </h3>
+                    <p className="text-white/40 mb-6">
+                        {searchQuery
+                            ? `No projects found matching "${searchQuery}"`
+                            : 'Create your first project to start generating AI visuals'
+                        }
+                    </p>
+                    {!searchQuery && (
+                        <Link href="/visual-engine/new">
+                            <Button className="bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-full px-6 font-bold">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create First Project
+                            </Button>
+                        </Link>
+                    )}
                 </div>
             )}
         </div>
