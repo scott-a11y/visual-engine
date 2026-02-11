@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import PlanUpload from '@/components/plan-upload';
 import {
     ArrowLeft,
     Sparkles,
@@ -14,7 +15,9 @@ import {
     ExternalLink,
     Play,
     Plus,
-    RefreshCw
+    RefreshCw,
+    FileUp,
+    LayoutGrid
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -30,7 +33,8 @@ export default function ProjectDetailsPage() {
     const [project, setProject] = useState<Project | null>(null);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [loading, setLoading] = useState(true);
-    const [generating, setGenerating] = useState<string | null>(null); // 'image' | 'video'
+    const [generating, setGenerating] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'gallery' | 'plans'>('gallery');
 
     const fetchProjectData = async () => {
         if (isDemoMode()) {
@@ -216,74 +220,110 @@ export default function ProjectDetailsPage() {
                 </div>
             </div>
 
+            {/* Tab Navigation */}
+            <div className="flex items-center gap-1 p-1 bg-white/5 rounded-2xl w-fit">
+                <button
+                    onClick={() => setActiveTab('gallery')}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'gallery'
+                            ? 'bg-white/10 text-white shadow-lg'
+                            : 'text-white/40 hover:text-white/60'
+                        }`}
+                >
+                    <LayoutGrid className="w-4 h-4" />
+                    Asset Gallery
+                </button>
+                <button
+                    onClick={() => setActiveTab('plans')}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'plans'
+                            ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 shadow-lg'
+                            : 'text-white/40 hover:text-white/60'
+                        }`}
+                >
+                    <FileUp className="w-4 h-4" />
+                    Upload Plans
+                </button>
+            </div>
+
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Visuals Gallery */}
+                {/* Left Content */}
                 <div className="lg:col-span-3 space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-xl font-bold">Asset Gallery</h2>
-                        <div className="text-xs text-white/40 flex items-center gap-2">
-                            <RefreshCw className="w-3 h-3" />
-                            Live sync active
-                        </div>
-                    </div>
-
-                    {assets.length === 0 ? (
-                        <div className="aspect-video rounded-[2.5rem] bg-white/5 border border-dashed border-white/10 flex flex-col items-center justify-center text-white/20">
-                            <Sparkles className="w-12 h-12 mb-4 opacity-50" />
-                            <p>No visuals generated yet.</p>
-                            <p className="text-sm">Click generate to start the engine.</p>
-                        </div>
+                    {activeTab === 'plans' ? (
+                        <PlanUpload
+                            projectId={id as string}
+                            projectName={project.name}
+                            onRenderGenerated={(asset) => {
+                                setAssets(prev => [asset, ...prev]);
+                            }}
+                        />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {assets.map((asset) => (
-                                <div key={asset.id} className="group relative bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden hover:border-white/20 transition-all">
-                                    {/* Preview Area */}
-                                    <div className="aspect-video bg-neutral-900 relative">
-                                        {asset.status === 'complete' ? (
-                                            asset.type === 'image' ? (
-                                                <img src={asset.url || ''} alt="" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-black">
-                                                    <Play className="w-12 h-12 text-white/40 group-hover:text-indigo-400 transition-colors" />
-                                                </div>
-                                            )
-                                        ) : (
-                                            <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                                                <Loading />
-                                                <p className="text-xs font-bold uppercase tracking-widest text-white/40">{asset.status}</p>
-                                            </div>
-                                        )}
-
-                                        {/* Overlay Actions */}
-                                        {asset.status === 'complete' && (
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                                                <Button size="icon" className="rounded-full bg-white text-black hover:scale-110 transition-transform">
-                                                    <Download className="w-5 h-5" />
-                                                </Button>
-                                                <Button size="icon" className="rounded-full bg-white/20 backdrop-blur-md text-white hover:scale-110 transition-transform">
-                                                    <ExternalLink className="w-5 h-5" />
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Meta info */}
-                                    <div className="p-5">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                {asset.type === 'image' ? <ImageIcon className="w-4 h-4 text-white/40" /> : <VideoIcon className="w-4 h-4 text-indigo-400" />}
-                                                <span className="text-sm font-medium capitalize">{asset.type}</span>
-                                            </div>
-                                            <span className="text-[10px] text-white/40 uppercase tracking-widest">
-                                                {new Date(asset.created_at).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-white/60 line-clamp-2 italic">"{asset.prompt}"</p>
-                                    </div>
+                        <>
+                            <div className="flex items-center justify-between mb-2">
+                                <h2 className="text-xl font-bold">Asset Gallery</h2>
+                                <div className="text-xs text-white/40 flex items-center gap-2">
+                                    <RefreshCw className="w-3 h-3" />
+                                    Live sync active
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+
+                            {assets.length === 0 ? (
+                                <div className="aspect-video rounded-[2.5rem] bg-white/5 border border-dashed border-white/10 flex flex-col items-center justify-center text-white/20">
+                                    <Sparkles className="w-12 h-12 mb-4 opacity-50" />
+                                    <p>No visuals generated yet.</p>
+                                    <p className="text-sm">Click generate to start the engine.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {assets.map((asset) => (
+                                        <div key={asset.id} className="group relative bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden hover:border-white/20 transition-all">
+                                            {/* Preview Area */}
+                                            <div className="aspect-video bg-neutral-900 relative">
+                                                {asset.status === 'complete' ? (
+                                                    asset.type === 'image' ? (
+                                                        <img src={asset.url || ''} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-black">
+                                                            <Play className="w-12 h-12 text-white/40 group-hover:text-indigo-400 transition-colors" />
+                                                        </div>
+                                                    )
+                                                ) : (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                                                        <Loading />
+                                                        <p className="text-xs font-bold uppercase tracking-widest text-white/40">{asset.status}</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Overlay Actions */}
+                                                {asset.status === 'complete' && (
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                                        <Button size="icon" className="rounded-full bg-white text-black hover:scale-110 transition-transform">
+                                                            <Download className="w-5 h-5" />
+                                                        </Button>
+                                                        <Button size="icon" className="rounded-full bg-white/20 backdrop-blur-md text-white hover:scale-110 transition-transform">
+                                                            <ExternalLink className="w-5 h-5" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Meta info */}
+                                            <div className="p-5">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        {asset.type === 'image' ? <ImageIcon className="w-4 h-4 text-white/40" /> : <VideoIcon className="w-4 h-4 text-indigo-400" />}
+                                                        <span className="text-sm font-medium capitalize">{asset.type}</span>
+                                                    </div>
+                                                    <span className="text-[10px] text-white/40 uppercase tracking-widest">
+                                                        {new Date(asset.created_at).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-white/60 line-clamp-2 italic">"{asset.prompt}"</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
