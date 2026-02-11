@@ -3,9 +3,15 @@ import type { Asset, AssetInsert, AssetUpdate, Database } from '../types/databas
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SupabaseClient } from '@supabase/supabase-js';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 export class VisualEngineService {
+    private static _genAI: GoogleGenerativeAI | null = null;
+
+    private static get genAI() {
+        if (!this._genAI) {
+            this._genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'mock-key');
+        }
+        return this._genAI;
+    }
     static async generateImage(
         projectId: string,
         preset: 'exterior' | 'kitchen',
@@ -31,7 +37,7 @@ export class VisualEngineService {
 
         const { data, error } = await supabase
             .from('assets')
-            .insert(insertData)
+            .insert(insertData as any) // Using any here to bypass complex Postgrest inference issues
             .select()
             .single();
 
@@ -65,7 +71,7 @@ export class VisualEngineService {
 
         const { data, error } = await supabase
             .from('assets')
-            .insert(insertData)
+            .insert(insertData as any)
             .select()
             .single();
 
@@ -79,7 +85,7 @@ export class VisualEngineService {
 
     private static async processRealGeminiGeneration(assetId: string, prompt: string) {
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             console.log(`Starting Gemini generation for asset ${assetId} with prompt: "${prompt}"`);
 
@@ -96,7 +102,7 @@ export class VisualEngineService {
 
             await supabase
                 .from('assets')
-                .update(updateData)
+                .update(updateData as any)
                 .eq('id', assetId);
 
             console.log(`Gemini generation complete for asset ${assetId}. Response: ${text.substring(0, 100)}...`);
@@ -107,7 +113,7 @@ export class VisualEngineService {
             const failData: AssetUpdate = { status: 'failed' };
             await supabase
                 .from('assets')
-                .update(failData)
+                .update(failData as any)
                 .eq('id', assetId);
         }
     }
@@ -121,7 +127,7 @@ export class VisualEngineService {
             };
             await supabase
                 .from('assets')
-                .update(updateData)
+                .update(updateData as any)
                 .eq('id', assetId);
         }, 20000);
     }

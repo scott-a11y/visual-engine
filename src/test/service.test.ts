@@ -2,6 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { VisualEngineService } from '../lib/services/visual-engine-service';
 import { createClient } from '../lib/supabase/server';
 
+// Mock Google AI
+vi.mock('@google/generative-ai', () => ({
+    GoogleGenerativeAI: vi.fn(() => ({
+        getGenerativeModel: vi.fn(() => ({
+            generateContent: vi.fn(() => Promise.resolve({
+                response: {
+                    text: () => 'Mocked AI response'
+                }
+            }))
+        }))
+    }))
+}));
+
 // Mock Supabase
 vi.mock('../lib/supabase/server', () => ({
     createClient: vi.fn(() => ({
