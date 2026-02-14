@@ -69,6 +69,7 @@ export interface Database {
                     style: string | null;
                     stage: string | null;
                     notes: string | null;
+                    persona_id: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -81,6 +82,7 @@ export interface Database {
                     style?: string | null;
                     stage?: string | null;
                     notes?: string | null;
+                    persona_id?: string | null;
                 };
                 Update: {
                     company_id?: string | null;
@@ -90,6 +92,7 @@ export interface Database {
                     style?: string | null;
                     stage?: string | null;
                     notes?: string | null;
+                    persona_id?: string | null;
                 };
             };
             assets: {

@@ -9,6 +9,8 @@ import {
     Menu,
     X,
     Hammer,
+    Activity,
+    Compass,
     ImageIcon
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -16,7 +18,7 @@ import { isDemoMode, DEMO_USER, DEMO_COMPANIES } from '@/lib/demo-data';
 import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 
-export default function VisualEngineLayout({ children }: { children: ReactNode }) {
+export default function HubLayout({ children }: { children: ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const supabase = createClient();
@@ -24,20 +26,6 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        if (isDemoMode()) {
-            setUser(DEMO_USER as any);
-            // If it's the Dallis email, we should use that instead of the default DEMO_USER
-            // but for simplicity in layout we'll rely on what the auth system returned 
-            // since we updated the stubClient to return the correct user.
-            const checkUser = async () => {
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
-                if (currentUser) {
-                    setUser(currentUser);
-                }
-            };
-            checkUser();
-            return;
-        }
         async function getUser() {
             const { data: { user: currentUser } } = await supabase.auth.getUser();
             if (!currentUser) {
@@ -49,21 +37,21 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
         getUser();
     }, [supabase, router]);
 
-    const companyId = user?.user_metadata?.company_id;
-    const company = isDemoMode()
-        ? DEMO_COMPANIES.find(c => c.id === companyId) || DEMO_COMPANIES[0]
-        : null;
-
     const navItems = [
-        { href: '/hub', label: 'Hub', icon: LayoutDashboard },
-        { href: '/visual-engine', label: 'Projects', icon: LayoutDashboard },
-        { href: '/visual-engine/branding', label: 'Brand Center', icon: ImageIcon },
+        { href: '/hub', label: 'Hub', icon: Activity },
+        { href: '/visual-engine', label: 'Projects', icon: Compass },
+        { href: '/visual-engine/branding', label: 'Branding', icon: ImageIcon },
     ];
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
         router.push('/login');
     };
+
+    const companyId = user?.user_metadata?.company_id;
+    const company = isDemoMode()
+        ? DEMO_COMPANIES.find(c => c.id === companyId) || DEMO_COMPANIES[0]
+        : null; // Would fetch from DB in production
 
     const branding = company?.name || 'Active Workspace';
     const brandColor = company?.primary_color || '#f59e0b';
@@ -106,9 +94,9 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${pathname === item.href
+                                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${pathname === item.href
                                     ? 'bg-white/10 text-white'
-                                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                                    : 'text-white/40 hover:text-white hover:bg-white/5'
                                     }`}
                             >
                                 {item.label}
@@ -118,28 +106,25 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
 
                     {/* User Menu */}
                     <div className="hidden md:flex items-center gap-4">
-                        <span className="text-xs text-white/40">{user?.email}</span>
+                        <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{user?.email}</span>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleSignOut}
-                            className="text-white/60 hover:text-white hover:bg-white/5"
+                            className="text-white/60 hover:text-white hover:bg-white/5 rounded-xl h-9"
                         >
                             <LogOut className="w-4 h-4 mr-2" />
                             Exit
                         </Button>
                     </div>
 
-                    {/* Mobile: Email + Menu Toggle */}
-                    <div className="md:hidden flex items-center gap-3">
-                        <span className="text-[10px] text-white/40 truncate max-w-[140px]">{user?.email}</span>
-                        <button
-                            className="p-2 text-white/60"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        >
-                            {mobileMenuOpen ? <X /> : <Menu />}
-                        </button>
-                    </div>
+                    {/* Mobile Menu Toggle */}
+                    <button
+                        className="md:hidden p-2 text-white/60"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        {mobileMenuOpen ? <X /> : <Menu />}
+                    </button>
                 </div>
             </header>
 
@@ -147,30 +132,20 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
             {mobileMenuOpen && (
                 <div className="fixed inset-0 z-40 bg-black/90 backdrop-blur-2xl md:hidden pt-20 px-6">
                     <nav className="flex flex-col gap-4">
-                        {/* User info */}
-                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-sm">
-                                {user?.email?.[0]?.toUpperCase() || 'C'}
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-white">{user?.user_metadata?.full_name || 'Project Lead'}</p>
-                                <p className="text-[11px] text-white/40">{user?.email}</p>
-                            </div>
-                        </div>
                         {navItems.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="flex items-center gap-3 text-lg font-medium p-4 rounded-2xl bg-white/5"
+                                className="flex items-center gap-3 text-lg font-medium p-4 rounded-3xl bg-white/5 border border-white/5"
                             >
-                                <item.icon className="w-5 h-5" />
+                                <item.icon className="w-5 h-5 text-amber-500" />
                                 {item.label}
                             </Link>
                         ))}
                         <button
                             onClick={handleSignOut}
-                            className="flex items-center gap-3 text-lg font-medium p-4 rounded-2xl bg-red-500/10 text-red-400"
+                            className="flex items-center gap-3 text-lg font-medium p-4 rounded-3xl bg-red-500/10 text-red-400 border border-red-500/10"
                         >
                             <LogOut className="w-5 h-5" />
                             Sign Out

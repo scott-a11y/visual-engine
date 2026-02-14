@@ -35,12 +35,12 @@ export default function ProjectFlyerPage() {
                 setAssets(DEMO_ASSETS.filter(a => a.status === 'complete') as any);
                 setCompany({
                     id: 'demo-company',
-                    name: 'Chad E. Davis Construction',
+                    name: demoProject.persona_id === 'persona_dallis_raynor' ? 'Rose City Reimagined' : 'Chad E. Davis Construction',
                     logo_url: null,
-                    primary_color: '#f59e0b',
-                    contact_email: 'chad@davisconstruction.com',
-                    contact_phone: '(425) 555-0142',
-                    website: 'davisconstruction.com',
+                    primary_color: demoProject.persona_id === 'persona_dallis_raynor' ? '#6366f1' : '#f59e0b',
+                    contact_email: demoProject.persona_id === 'persona_dallis_raynor' ? 'dallis@rosecityreimagined.com' : 'chad@davisconstruction.com',
+                    contact_phone: demoProject.persona_id === 'persona_dallis_raynor' ? '(503) 555-0192' : '(425) 555-0142',
+                    website: demoProject.persona_id === 'persona_dallis_raynor' ? 'rosecityreimagined.com' : 'davisconstruction.com',
                     created_at: new Date().toISOString(),
                 } as Company);
                 setLoading(false);

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Hammer, Mail, Lock, ChevronRight, Loader2, ArrowRight } from 'lucide-react';
+import { Hammer, Mail, Lock, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -14,6 +14,11 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,7 +33,7 @@ export default function LoginPage() {
 
             if (authError) throw authError;
 
-            router.push('/visual-engine');
+            router.push('/hub');
             router.refresh();
         } catch (err: any) {
             setError(err.message || 'Invalid login credentials');
@@ -50,86 +55,136 @@ export default function LoginPage() {
                 </div>
                 <div className="text-center">
                     <h1 className="text-3xl font-bold tracking-tighter bg-gradient-to-r from-amber-200 to-amber-400 bg-clip-text text-transparent">
-                        Chad E. Davis Construction
+                        Visual Engine
                     </h1>
                     <p className="text-white/40 font-medium mt-1 uppercase tracking-widest text-[10px]">
-                        Visual Engine — Marketing Suite
+                        Professional Marketing Suite
                     </p>
                 </div>
             </div>
 
             {/* Login Card */}
             <div className="w-full max-w-md bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 blur-3xl rounded-full" />
-
-                <h2 className="text-2xl font-bold mb-8 tracking-tight">Welcome back</h2>
-
-                <form onSubmit={handleLogin} className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-1">Email Address</label>
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                <Mail className="w-5 h-5 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
-                            </div>
-                            <input
-                                required
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@company.com"
-                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/[0.08] transition-all"
-                            />
+                {!mounted ? (
+                    <div className="space-y-6">
+                        <div className="h-8 w-32 bg-white/5 rounded-lg animate-pulse" />
+                        <div className="space-y-4">
+                            <div className="h-14 bg-white/5 rounded-2xl animate-pulse" />
+                            <div className="h-14 bg-white/5 rounded-2xl animate-pulse" />
+                            <div className="h-14 bg-white/10 rounded-2xl animate-pulse" />
                         </div>
                     </div>
+                ) : (
+                    <>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 blur-3xl rounded-full" />
 
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between ml-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Password</label>
-                            <Link href="#" className="text-[10px] uppercase tracking-widest text-indigo-400 hover:text-indigo-300 font-bold">Forgot?</Link>
-                        </div>
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                <Lock className="w-5 h-5 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
+                        <h2 className="text-2xl font-bold mb-8 tracking-tight">Welcome back</h2>
+
+                        <form onSubmit={handleLogin} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/40 ml-1">Email Address</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                        <Mail className="w-5 h-5 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
+                                    </div>
+                                    <input
+                                        required
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="name@company.com"
+                                        className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/[0.08] transition-all"
+                                        suppressHydrationWarning
+                                    />
+                                </div>
                             </div>
-                            <input
-                                required
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/[0.08] transition-all"
-                            />
+
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between ml-1">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Password</label>
+                                    <Link href="#" className="text-[10px] uppercase tracking-widest text-indigo-400 hover:text-indigo-300 font-bold">Forgot?</Link>
+                                </div>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                        <Lock className="w-5 h-5 text-white/20 group-focus-within:text-indigo-400 transition-colors" />
+                                    </div>
+                                    <input
+                                        required
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/[0.08] transition-all"
+                                        suppressHydrationWarning
+                                    />
+                                </div>
+                            </div>
+
+                            {error && (
+                                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm animate-in fade-in slide-in-from-top-1">
+                                    {error}
+                                </div>
+                            )}
+
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full h-14 bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500 rounded-2xl text-lg font-bold shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all active:scale-[0.98] group"
+                            >
+                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                                    <span className="flex items-center justify-center gap-2">
+                                        Access Dashboard
+                                        <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    </span>
+                                )}
+                            </Button>
+                        </form>
+
+                        <div className="mt-8 space-y-4">
+                            <div className="flex items-center gap-4">
+                                <div className="h-px flex-1 bg-white/5" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">Demo Access</span>
+                                <div className="h-px flex-1 bg-white/5" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setEmail('chad@davisconstruction.com');
+                                        setPassword('password123');
+                                        setTimeout(() => document.querySelector('form')?.requestSubmit(), 50);
+                                    }}
+                                    className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left group"
+                                >
+                                    <p className="text-[10px] font-bold text-white/40 uppercase group-hover:text-amber-400 transition-colors">Chad Davis</p>
+                                    <p className="text-[9px] text-white/20 truncate">Construction Spec</p>
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setEmail('dallis@rosecityreimagined.com');
+                                        setPassword('password123');
+                                        setTimeout(() => document.querySelector('form')?.requestSubmit(), 50);
+                                    }}
+                                    className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left group"
+                                >
+                                    <p className="text-[10px] font-bold text-white/40 uppercase group-hover:text-indigo-400 transition-colors">Dallis Raynor</p>
+                                    <p className="text-[9px] text-white/20 truncate">Rehab & Infill</p>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    {error && (
-                        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm animate-in fade-in slide-in-from-top-1">
-                            {error}
+                        <div className="mt-10 pt-8 border-t border-white/5 text-center">
+                            <p className="text-white/40 text-sm font-medium">
+                                Don't have an account?{' '}
+                                <Link href="/signup" className="text-white hover:text-indigo-400 transition-colors font-bold">
+                                    Request Access
+                                </Link>
+                            </p>
                         </div>
-                    )}
-
-                    <Button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full h-14 bg-gradient-to-r from-amber-500 to-amber-600 text-black hover:from-amber-400 hover:to-amber-500 rounded-2xl text-lg font-bold shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all active:scale-[0.98] group"
-                    >
-                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
-                            <span className="flex items-center justify-center gap-2">
-                                Access Dashboard
-                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </span>
-                        )}
-                    </Button>
-                </form>
-
-                <div className="mt-10 pt-8 border-t border-white/5 text-center">
-                    <p className="text-white/40 text-sm font-medium">
-                        Don't have an account?{' '}
-                        <Link href="/signup" className="text-white hover:text-indigo-400 transition-colors font-bold">
-                            Request Access
-                        </Link>
-                    </p>
-                </div>
+                    </>
+                )}
             </div>
 
             {/* Footer Attribution */}

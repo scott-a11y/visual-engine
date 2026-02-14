@@ -19,25 +19,30 @@ import {
     FileUp,
     LayoutGrid,
     X,
-    ZoomIn
+    ZoomIn,
+    Hammer
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
 import { createClient } from '@/lib/supabase/client';
-import { isDemoMode, DEMO_PROJECTS, DEMO_ASSETS } from '@/lib/demo-data';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { isDemoMode, DEMO_PROJECTS, DEMO_ASSETS, DEMO_COMPANIES } from '@/lib/demo-data';
+import { RealtimePostgresChangesPayload, User } from '@supabase/supabase-js';
 import type { Project, Asset } from '@/lib/types/database';
+import { DEMO_PERSONAS } from '@/lib/demo-data';
+import { PersonaCard } from '@/components/persona-card';
 
 export default function ProjectDetailsPage() {
     const { id } = useParams();
     const router = useRouter();
+    const supabase = createClient();
     const [project, setProject] = useState<Project | null>(null);
     const [assets, setAssets] = useState<Asset[]>([]);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'gallery' | 'plans'>('gallery');
     const [lightboxAsset, setLightboxAsset] = useState<Asset | null>(null);
+    const [user, setUser] = useState<User | null>(null);
 
     // Escape key closes lightbox
     useEffect(() => {
@@ -55,8 +60,19 @@ export default function ProjectDetailsPage() {
     }, [lightboxAsset]);
 
     const fetchProjectData = async () => {
+        // Get User first
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        setUser(currentUser);
+
         if (isDemoMode()) {
             const demoProject = DEMO_PROJECTS.find(p => p.id === id);
+
+            // Security: Prevent accessing other builders' projects
+            if (demoProject && demoProject.user_id !== currentUser?.id) {
+                router.push('/visual-engine');
+                return;
+            }
+
             setProject(demoProject || DEMO_PROJECTS[0]);
             setAssets(DEMO_ASSETS.filter(a => a.project_id === id || a.project_id === DEMO_PROJECTS[0].id) as any);
             setLoading(false);
@@ -66,6 +82,12 @@ export default function ProjectDetailsPage() {
             const res = await fetch(`/api/projects/${id}`);
             if (!res.ok) throw new Error('Project not found');
             const projectData = await res.json();
+
+            if (projectData.data.user_id !== currentUser?.id) {
+                router.push('/visual-engine');
+                return;
+            }
+
             setProject(projectData.data);
 
             const assetsRes = await fetch(`/api/assets?projectId=${id}`);
@@ -84,7 +106,6 @@ export default function ProjectDetailsPage() {
         if (isDemoMode()) return; // Skip realtime in demo mode
 
         // Initialize Realtime Subscription
-        const supabase = createClient();
         const channel = supabase
             .channel(`project-assets-${id}`)
             .on(
@@ -130,7 +151,7 @@ export default function ProjectDetailsPage() {
                 status: 'processing' as const,
                 external_job_id: null,
                 url: null,
-                created_by: 'demo-user-001',
+                created_by: user?.id || 'demo-user-001',
                 metadata: {},
                 created_at: new Date().toISOString(),
             } as any;
@@ -174,6 +195,13 @@ export default function ProjectDetailsPage() {
         }
     };
 
+    const companyId = user?.user_metadata?.company_id;
+    const company = isDemoMode()
+        ? DEMO_COMPANIES.find(c => c.id === companyId) || DEMO_COMPANIES[0]
+        : null;
+
+    const brandColor = company?.primary_color || '#f59e0b';
+
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
             <Loading size="lg" />
@@ -203,7 +231,10 @@ export default function ProjectDetailsPage() {
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-                            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold uppercase tracking-widest text-indigo-400">
+                            <span
+                                className="px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-widest"
+                                style={{ backgroundColor: `${brandColor}10`, borderColor: `${brandColor}20`, color: brandColor }}
+                            >
                                 {project.status}
                             </span>
                         </div>
@@ -230,7 +261,8 @@ export default function ProjectDetailsPage() {
                     <Button
                         disabled={!!generating}
                         onClick={() => handleGenerate('video')}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6"
+                        className="text-white rounded-full px-6"
+                        style={{ backgroundColor: brandColor }}
                     >
                         {generating === 'video' ? <Loading size="sm" className="mr-2" /> : <VideoIcon className="w-4 h-4 mr-2" />}
                         Generate Video
@@ -253,9 +285,10 @@ export default function ProjectDetailsPage() {
                 <button
                     onClick={() => setActiveTab('plans')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'plans'
-                        ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 shadow-lg'
+                        ? 'bg-white/10 text-white shadow-lg'
                         : 'text-white/40 hover:text-white/60'
                         }`}
+                    style={activeTab === 'plans' ? { backgroundColor: `${brandColor}20`, color: brandColor } : {}}
                 >
                     <FileUp className="w-4 h-4" />
                     Upload Plans
@@ -301,7 +334,10 @@ export default function ProjectDetailsPage() {
                                                         <img src={asset.url || ''} alt="" className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center bg-black">
-                                                            <Play className="w-12 h-12 text-white/40 group-hover:text-indigo-400 transition-colors" />
+                                                            <Play
+                                                                className="w-12 h-12 text-white/40 transition-colors"
+                                                                style={{ groupHoverColor: brandColor } as any}
+                                                            />
                                                         </div>
                                                     )
                                                 ) : (
@@ -339,7 +375,7 @@ export default function ProjectDetailsPage() {
                                             <div className="p-5">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <div className="flex items-center gap-2">
-                                                        {asset.type === 'image' ? <ImageIcon className="w-4 h-4 text-white/40" /> : <VideoIcon className="w-4 h-4 text-indigo-400" />}
+                                                        {asset.type === 'image' ? <ImageIcon className="w-4 h-4 text-white/40" /> : <VideoIcon className="w-4 h-4" style={{ color: brandColor }} />}
                                                         <span className="text-sm font-medium capitalize">{asset.type}</span>
                                                     </div>
                                                     <span className="text-[10px] text-white/40 uppercase tracking-widest">
@@ -364,7 +400,7 @@ export default function ProjectDetailsPage() {
                         <div className="space-y-4">
                             <div>
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Style</label>
-                                <p className="text-indigo-400 font-medium">{project.style || 'Not specified'}</p>
+                                <p className="font-medium" style={{ color: brandColor }}>{project.style || 'Not specified'}</p>
                             </div>
                             <div>
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Construction Stage</label>
@@ -379,7 +415,22 @@ export default function ProjectDetailsPage() {
                         </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 border border-white/10 rounded-3xl p-6">
+                    {project.persona_id && (
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-white/30 ml-2">Active Strategy</h3>
+                            {DEMO_PERSONAS.find(p => p.id === project.persona_id) ? (
+                                <PersonaCard
+                                    persona={DEMO_PERSONAS.find(p => p.id === project.persona_id)!}
+                                    isSelected={true}
+                                />
+                            ) : null}
+                        </div>
+                    )}
+
+                    <div
+                        className="border rounded-3xl p-6"
+                        style={{ background: `linear-gradient(to bottom right, ${brandColor}20, transparent)`, borderColor: `${brandColor}20` }}
+                    >
                         <h3 className="font-bold mb-4">Marketing Tip</h3>
                         <p className="text-sm text-white/70 leading-relaxed">
                             Exterior drone reels are currently performing 40% better on Instagram for new construction listings.

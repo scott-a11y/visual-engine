@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { isDemoMode, DEMO_PROJECTS } from '@/lib/demo-data';
+import { PersonaSelector } from '@/components/persona-selector';
 
 const STYLES = [
     'Modern Farmhouse',
@@ -47,7 +48,8 @@ export default function NewProjectPage() {
         address: '',
         style: '',
         stage: 'Pre-Construction',
-        notes: ''
+        notes: '',
+        persona_id: ''
     });
 
     const update = (field: string, value: string) => {
@@ -72,6 +74,7 @@ export default function NewProjectPage() {
                 style: form.style || null,
                 stage: form.stage || null,
                 notes: form.notes || null,
+                persona_id: form.persona_id || null,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             };
@@ -202,6 +205,12 @@ export default function NewProjectPage() {
                         className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/30 transition-all placeholder:text-white/15 resize-none leading-relaxed"
                     />
                 </div>
+
+                {/* Persona Selector */}
+                <PersonaSelector
+                    selectedId={form.persona_id}
+                    onSelect={(id) => update('persona_id', id)}
+                />
 
                 {/* Submit */}
                 <div className="pt-4 flex gap-4">

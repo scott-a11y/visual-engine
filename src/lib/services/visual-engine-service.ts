@@ -1,7 +1,9 @@
 import { createClient } from '../supabase/server';
-import type { Asset, AssetInsert, AssetUpdate, Database } from '../types/database';
+import type { Asset, AssetInsert, AssetUpdate, Database, Project } from '../types/database';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { DEMO_PERSONAS } from '../demo-data';
+import type { DeveloperPersona } from '../types/persona';
 
 // Prompt templates keyed by preset
 const IMAGE_PRESETS: Record<string, string> = {
@@ -38,24 +40,44 @@ export class VisualEngineService {
     }
 
     /**
-     * Build a rich prompt from project context + preset
+     * Build a rich prompt from project context + persona + preset
      */
     private static buildPrompt(
         preset: string,
-        projectContext?: { style?: string | null; notes?: string | null; name?: string | null },
+        projectContext?: Project | { style?: string | null; notes?: string | null; name?: string | null; persona_id?: string | null },
         extra?: string | null
     ): string {
-        const base = IMAGE_PRESETS[preset] || IMAGE_PRESETS['exterior'];
+        const persona = DEMO_PERSONAS.find(p => p.id === projectContext?.persona_id);
+        const base = IMAGE_PRESETS[preset] || VIDEO_PRESETS[preset] || IMAGE_PRESETS['exterior'];
         const parts = [base];
 
+        // Inject Persona Traits
+        if (persona) {
+            parts.push(`Design aesthetic: ${persona.archetype}.`);
+            parts.push(`Finish level: ${persona.finish_level.label}. ${persona.finish_level.description}`);
+
+            if (preset === 'kitchen') {
+                parts.push(`Kitchen Specifications: Style ${persona.cabinet_spec.kitchen.style}. Construction: ${persona.cabinet_spec.kitchen.construction}. palette: ${persona.cabinet_spec.kitchen.finish_palette.join(', ')}.`);
+                parts.push(`Hardware: ${persona.cabinet_spec.kitchen.hardware.default}.`);
+            }
+
+            parts.push(`Core Preservation Principles: ${persona.preservation_ethos.label}. ${persona.preservation_ethos.visual_engine_hints.composition} ${persona.preservation_ethos.visual_engine_hints.materials}`);
+
+            // Staging and Vibe
+            const vibe = persona.hold_vs_flip.primary_strategy.includes('resale')
+                ? persona.hold_vs_flip.staging_directives.flip.join(' ')
+                : persona.hold_vs_flip.staging_directives.hold.join(' ');
+            parts.push(`Staging & Vibe: ${vibe}`);
+        }
+
         if (projectContext?.style) {
-            parts.push(`Architectural style: ${projectContext.style}.`);
+            parts.push(`Specific architectural requirements: ${projectContext.style}.`);
         }
         if (projectContext?.notes) {
-            parts.push(`Property details: ${projectContext.notes}`);
+            parts.push(`Project context: ${projectContext.notes}`);
         }
         if (extra) {
-            parts.push(extra);
+            parts.push(`Additional user instructions: ${extra}`);
         }
 
         return parts.join(' ');
@@ -77,7 +99,7 @@ export class VisualEngineService {
         try {
             const { data: proj } = await supabase
                 .from('projects')
-                .select('name, style, notes')
+                .select('*')
                 .eq('id', projectId)
                 .single();
             if (proj) projectContext = proj;
@@ -121,8 +143,18 @@ export class VisualEngineService {
     ): Promise<Asset> {
         const supabase = (await createClient()) as SupabaseClient<Database>;
 
-        const base = VIDEO_PRESETS[preset] || VIDEO_PRESETS['neighborhood-reel'];
-        const prompt = `${base} ${extraInstructions || ''}`.trim();
+        // Fetch project context for richer prompts
+        let projectContext: Project | { style?: string | null; notes?: string | null; name?: string | null; persona_id?: string | null } = {};
+        try {
+            const { data: proj } = await supabase
+                .from('projects')
+                .select('*')
+                .eq('id', projectId)
+                .single();
+            if (proj) projectContext = proj;
+        } catch { /* ignore — prompt still works without context */ }
+
+        const prompt = this.buildPrompt(preset, projectContext, extraInstructions);
 
         const insertData: AssetInsert = {
             project_id: projectId,
