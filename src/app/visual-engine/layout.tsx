@@ -9,7 +9,8 @@ import {
     Menu,
     X,
     Hammer,
-    ImageIcon
+    ImageIcon,
+    FileSearch
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { isDemoMode } from '@/lib/demo-data';
@@ -44,6 +45,7 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
     const navItems = [
         { href: '/hub', label: 'Hub', icon: LayoutDashboard },
         { href: '/visual-engine', label: 'Projects', icon: LayoutDashboard },
+        { href: '/visual-engine/analyze', label: 'Plan Analyzer', icon: FileSearch },
         { href: '/visual-engine/branding', label: 'Brand Center', icon: ImageIcon },
     ];
 

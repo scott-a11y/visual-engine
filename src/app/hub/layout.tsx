@@ -11,7 +11,8 @@ import {
     Hammer,
     Activity,
     Compass,
-    ImageIcon
+    ImageIcon,
+    FileSearch
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { isDemoMode } from '@/lib/demo-data';
@@ -41,7 +42,8 @@ export default function HubLayout({ children }: { children: ReactNode }) {
     const navItems = [
         { href: '/hub', label: 'Hub', icon: Activity },
         { href: '/visual-engine', label: 'Projects', icon: Compass },
-        { href: '/visual-engine/branding', label: 'Branding', icon: ImageIcon },
+        { href: '/visual-engine/analyze', label: 'Plan Analyzer', icon: FileSearch },
+        { href: '/visual-engine/branding', label: 'Brand Center', icon: ImageIcon },
     ];
 
     const handleSignOut = async () => {

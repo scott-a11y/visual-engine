@@ -16,27 +16,42 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
 import { isDemoMode, DEMO_COMPANIES } from '@/lib/demo-data';
+import { createClient } from '@/lib/supabase/client';
+import { getCompanyBranding } from '@/lib/services/brand-service';
 import type { Company } from '@/lib/types/database';
+import { User } from '@supabase/supabase-js';
 
 export default function BrandingCenterPage() {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [showNewForm, setShowNewForm] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [userCompany, setUserCompany] = useState<any>(null);
+    const supabase = createClient();
 
     const [formData, setFormData] = useState<Partial<Company>>({
         name: '',
         contact_email: '',
         contact_phone: '',
         website: '',
-        primary_color: '#6366f1',
+        primary_color: '#f59e0b',
         brand_font: 'modernist'
     });
 
     useEffect(() => {
-        async function fetchCompanies() {
+        async function initData() {
+            const { data: { user: currentUser } } = await supabase.auth.getUser();
+            setUser(currentUser);
+
+            if (currentUser) {
+                const companyId = currentUser?.user_metadata?.company_id;
+                const branding = await getCompanyBranding(companyId);
+                setUserCompany(branding);
+            }
+
             if (isDemoMode()) {
-                setCompanies(DEMO_COMPANIES);
+                setCompanies(DEMO_COMPANIES as any);
                 setLoading(false);
                 return;
             }
@@ -51,8 +66,11 @@ export default function BrandingCenterPage() {
                 setLoading(false);
             }
         }
-        fetchCompanies();
+        initData();
     }, []);
+
+    const brandColor = userCompany?.primary_color || '#f59e0b';
+    const userCompanyId = user?.user_metadata?.company_id;
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,7 +90,7 @@ export default function BrandingCenterPage() {
                     contact_email: '',
                     contact_phone: '',
                     website: '',
-                    primary_color: '#6366f1',
+                    primary_color: '#f59e0b',
                     brand_font: 'modernist'
                 });
             }
@@ -98,7 +116,8 @@ export default function BrandingCenterPage() {
                 </div>
                 <Button
                     onClick={() => setShowNewForm(true)}
-                    className="bg-white text-black hover:bg-white/90 rounded-full"
+                    className="rounded-full px-6 font-bold"
+                    style={{ backgroundColor: brandColor, color: '#000' }}
                 >
                     <Plus className="w-4 h-4 mr-2" />
                     New Company
@@ -124,7 +143,17 @@ export default function BrandingCenterPage() {
                                         {company.name[0]}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-lg">{company.name}</h3>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-lg">{company.name}</h3>
+                                            {company.id === userCompanyId && (
+                                                <span
+                                                    className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight"
+                                                    style={{ backgroundColor: `${brandColor}20`, color: brandColor }}
+                                                >
+                                                    Your Company
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex items-center gap-4 text-xs text-white/40 mt-1">
                                             {company.contact_email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {company.contact_email}</span>}
                                             {company.website && <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {company.website}</span>}
@@ -157,7 +186,8 @@ export default function BrandingCenterPage() {
                                         required
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-4 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-4 focus:outline-none focus:ring-1"
+                                        style={{ '--tw-ring-color': brandColor } as any}
                                         placeholder="e.g. Chad Davis Homes"
                                     />
                                 </div>
@@ -173,7 +203,8 @@ export default function BrandingCenterPage() {
                                         <input
                                             value={formData.primary_color}
                                             onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl h-11 px-4 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-sm"
+                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl h-11 px-4 focus:outline-none focus:ring-1 font-mono text-sm"
+                                            style={{ '--tw-ring-color': brandColor } as any}
                                         />
                                     </div>
                                 </div>
@@ -183,7 +214,8 @@ export default function BrandingCenterPage() {
                                         type="email"
                                         value={formData.contact_email || ''}
                                         onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-4 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-4 focus:outline-none focus:ring-1"
+                                        style={{ '--tw-ring-color': brandColor } as any}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -195,8 +227,8 @@ export default function BrandingCenterPage() {
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, brand_font: f })}
                                                 className={`h-11 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all ${formData.brand_font === f
-                                                        ? 'bg-white text-black border-white'
-                                                        : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                                                    ? 'bg-white text-black border-white'
+                                                    : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
                                                     }`}
                                             >
                                                 {f}
@@ -216,7 +248,8 @@ export default function BrandingCenterPage() {
                                     <Button
                                         type="submit"
                                         disabled={saving}
-                                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                                        className="flex-1 text-black rounded-xl font-bold"
+                                        style={{ backgroundColor: brandColor }}
                                     >
                                         {saving ? <Loading size="sm" /> : 'Save Profile'}
                                     </Button>
@@ -224,9 +257,15 @@ export default function BrandingCenterPage() {
                             </form>
                         </div>
                     ) : (
-                        <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-3xl p-6">
-                            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center mb-4">
-                                <Building2 className="w-6 h-6 text-white" />
+                        <div
+                            className="border rounded-3xl p-6"
+                            style={{ backgroundColor: `${brandColor}10`, borderColor: `${brandColor}20` }}
+                        >
+                            <div
+                                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                                style={{ backgroundColor: brandColor }}
+                            >
+                                <Building2 className="w-6 h-6 text-black" />
                             </div>
                             <h3 className="font-bold text-lg mb-2">Multi-Company Support</h3>
                             <p className="text-sm text-white/60 leading-relaxed">
