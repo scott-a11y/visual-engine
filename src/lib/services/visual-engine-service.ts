@@ -265,4 +265,25 @@ export class VisualEngineService {
             }
         }, 15000);
     }
+    /**
+     * Generate high-end architectural marketing copy (Ghost Detailer)
+     */
+    static async generateMarketingCopy(context: string): Promise<string> {
+        try {
+            if (!this.hasValidApiKey()) {
+                return "This residence transcends mere shelter, offering a curated living experience where historical architecture meets modern ethereal grace. Every corner has been detailed by our specialized engine to reflect a deep preservationist soul, blending warm twilight glimmers with artisan-crafted textures that feel both timeless and profoundly new.";
+            }
+
+            const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+            const result = await model.generateContent([
+                `You are a luxury real estate marketing expert. Write a short, poetic, high-end "Ghost Detailer" description (max 60 words) for a professional dashboard about the following build context. Use terms like "ethereal," "bespoke," and "curated":\n\n"${context}"`
+            ]);
+
+            const response = await result.response;
+            return response.text().trim();
+        } catch (error) {
+            console.error('[VisualEngine] Copy generation failed:', error);
+            return "A bespoke architectural statement currently unfolding with curated materiality and refined proportions.";
+        }
+    }
 }

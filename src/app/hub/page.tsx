@@ -26,6 +26,7 @@ export default function UnifiedHubPage() {
     const [isGhosting, setIsGhosting] = useState(false);
     const [ghostOutput, setGhostOutput] = useState('');
     const [showToast, setShowToast] = useState(false);
+    const [stats, setStats] = useState({ engagement: 1248, leads: 42 });
     const supabase = createClient();
 
     useEffect(() => {
@@ -34,6 +35,16 @@ export default function UnifiedHubPage() {
             setUser(user);
         }
         getUser();
+
+        // Path 3: Command Center Evolution (Heartbeat)
+        const interval = setInterval(() => {
+            setStats(prev => ({
+                engagement: prev.engagement + Math.floor(Math.random() * 3),
+                leads: prev.leads + (Math.random() > 0.8 ? 1 : 0)
+            }));
+        }, 8000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const handleGhostDetail = async () => {
@@ -43,13 +54,21 @@ export default function UnifiedHubPage() {
         // Hide toast after 3s
         setTimeout(() => setShowToast(false), 3000);
 
-        // Simulate AI "Ghosting" Delay
-        await new Promise(r => setTimeout(r, 1500));
-
-        setGhostOutput(
-            "This residence transcends mere shelter, offering a curated living experience where historical architecture meets modern ethereal grace. Every corner has been detailed by our specialized engine to reflect a deep preservationist soul, blending warm twilight glimmers with artisan-crafted textures that feel both timeless and profoundly new."
-        );
-        setIsGhosting(false);
+        try {
+            const context = branding + " " + (DEMO_PROJECTS.find(p => p.id === 'demo-proj-001')?.name || '');
+            const res = await fetch('/api/generate/copy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ context }),
+            });
+            const data = await res.json();
+            setGhostOutput(data.copy || data.message);
+        } catch (err) {
+            console.error('Failed to generate ghost copy:', err);
+            setGhostOutput("A bespoke architectural statement currently unfolding with curated materiality and refined proportions.");
+        } finally {
+            setIsGhosting(false);
+        }
     };
 
     const companyId = user?.user_metadata?.company_id;
@@ -68,14 +87,14 @@ export default function UnifiedHubPage() {
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-1">Total Engagement</p>
                     <div className="flex items-end gap-2">
-                        <h3 className="text-2xl font-bold">1,248</h3>
+                        <h3 className="text-2xl font-bold transition-all duration-500">{stats.engagement.toLocaleString()}</h3>
                         <span className="text-emerald-400 text-xs font-bold mb-1">+12%</span>
                     </div>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-1">Active Leads</p>
                     <div className="flex items-end gap-2">
-                        <h3 className="text-2xl font-bold">42</h3>
+                        <h3 className="text-2xl font-bold transition-all duration-500">{stats.leads}</h3>
                         <span className="text-amber-400 text-xs font-bold mb-1">9 unread</span>
                     </div>
                 </div>

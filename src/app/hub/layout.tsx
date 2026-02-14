@@ -14,7 +14,8 @@ import {
     ImageIcon
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { isDemoMode, DEMO_USER, DEMO_COMPANIES } from '@/lib/demo-data';
+import { isDemoMode } from '@/lib/demo-data';
+import { getCompanyBranding } from '@/lib/services/brand-service';
 import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 
@@ -48,10 +49,18 @@ export default function HubLayout({ children }: { children: ReactNode }) {
         router.push('/login');
     };
 
-    const companyId = user?.user_metadata?.company_id;
-    const company = isDemoMode()
-        ? DEMO_COMPANIES.find(c => c.id === companyId) || DEMO_COMPANIES[0]
-        : null; // Would fetch from DB in production
+    const [company, setCompany] = useState<any>(null);
+
+    useEffect(() => {
+        async function fetchBranding() {
+            if (user) {
+                const companyId = user?.user_metadata?.company_id;
+                const branding = await getCompanyBranding(companyId);
+                setCompany(branding);
+            }
+        }
+        fetchBranding();
+    }, [user]);
 
     const branding = company?.name || 'Active Workspace';
     const brandColor = company?.primary_color || '#f59e0b';

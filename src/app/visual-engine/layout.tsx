@@ -12,7 +12,8 @@ import {
     ImageIcon
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { isDemoMode, DEMO_USER, DEMO_COMPANIES } from '@/lib/demo-data';
+import { isDemoMode } from '@/lib/demo-data';
+import { getCompanyBranding } from '@/lib/services/brand-service';
 import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 
@@ -22,37 +23,23 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
     const supabase = createClient();
     const [user, setUser] = useState<User | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [company, setCompany] = useState<any>(null);
 
     useEffect(() => {
-        if (isDemoMode()) {
-            setUser(DEMO_USER as any);
-            // If it's the Dallis email, we should use that instead of the default DEMO_USER
-            // but for simplicity in layout we'll rely on what the auth system returned 
-            // since we updated the stubClient to return the correct user.
-            const checkUser = async () => {
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
-                if (currentUser) {
-                    setUser(currentUser);
-                }
-            };
-            checkUser();
-            return;
-        }
-        async function getUser() {
+        async function initAuth() {
             const { data: { user: currentUser } } = await supabase.auth.getUser();
             if (!currentUser) {
                 router.push('/login');
                 return;
             }
             setUser(currentUser);
-        }
-        getUser();
-    }, [supabase, router]);
 
-    const companyId = user?.user_metadata?.company_id;
-    const company = isDemoMode()
-        ? DEMO_COMPANIES.find(c => c.id === companyId) || DEMO_COMPANIES[0]
-        : null;
+            const companyId = currentUser?.user_metadata?.company_id;
+            const branding = await getCompanyBranding(companyId);
+            setCompany(branding);
+        }
+        initAuth();
+    }, [supabase, router]);
 
     const navItems = [
         { href: '/hub', label: 'Hub', icon: LayoutDashboard },
