@@ -11,7 +11,8 @@ import {
     Hammer,
     ImageIcon,
     FileSearch,
-    Box
+    Box,
+    Paintbrush
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { isDemoMode } from '@/lib/demo-data';
@@ -48,6 +49,7 @@ export default function VisualEngineLayout({ children }: { children: ReactNode }
         { href: '/visual-engine', label: 'Projects', icon: LayoutDashboard },
         { href: '/visual-engine/analyze', label: 'Plan Analyzer', icon: FileSearch },
         { href: '/visual-engine/model', label: '3D Model', icon: Box },
+        { href: '/visual-engine/interiors', label: 'Interiors', icon: Paintbrush },
         { href: '/visual-engine/branding', label: 'Brand Center', icon: ImageIcon },
     ];
 
