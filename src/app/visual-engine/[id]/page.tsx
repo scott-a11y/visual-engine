@@ -10,6 +10,8 @@ import {
     Video as VideoIcon,
     Clock,
     CheckCircle2,
+    Share2,
+    Copy,
     AlertCircle,
     Download,
     ExternalLink,
@@ -250,6 +252,17 @@ export default function ProjectDetailsPage() {
                             View Flyer
                         </Button>
                     </Link>
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/share/${id}`);
+                            alert('Public share link copied to clipboard!');
+                        }}
+                        className="rounded-full px-6 border-white/10 hover:bg-white/10"
+                    >
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share Experience
+                    </Button>
                     <Button
                         disabled={!!generating}
                         onClick={() => handleGenerate('image')}
