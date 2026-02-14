@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS companies (
     contact_email TEXT,
     contact_phone TEXT,
     website TEXT,
+    brand_font TEXT DEFAULT 'modernist', -- 'modernist', 'luxury', 'industrial'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

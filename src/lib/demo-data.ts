@@ -40,6 +40,7 @@ export const DEMO_COMPANIES = [
         contact_email: 'chad@davisconstruction.com',
         contact_phone: '(425) 555-0142',
         website: 'davisconstruction.com',
+        brand_font: 'industrial',
         created_at: new Date().toISOString(),
     },
     {
@@ -50,6 +51,7 @@ export const DEMO_COMPANIES = [
         contact_email: 'dallis@rosecityreimagined.com',
         contact_phone: '(503) 555-0192',
         website: 'rosecityreimagined.com',
+        brand_font: 'luxury',
         created_at: new Date().toISOString(),
     }
 ];

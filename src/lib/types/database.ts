@@ -19,6 +19,7 @@ export interface Database {
                     contact_email: string | null;
                     contact_phone: string | null;
                     website: string | null;
+                    brand_font: string;
                     created_at: string;
                 };
                 Insert: {
@@ -28,6 +29,7 @@ export interface Database {
                     contact_email?: string | null;
                     contact_phone?: string | null;
                     website?: string | null;
+                    brand_font?: string;
                 };
                 Update: {
                     name?: string;
@@ -36,6 +38,7 @@ export interface Database {
                     contact_email?: string | null;
                     contact_phone?: string | null;
                     website?: string | null;
+                    brand_font?: string;
                 };
             };
             profiles: {

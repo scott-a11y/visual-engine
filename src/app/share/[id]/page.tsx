@@ -85,9 +85,27 @@ export default function PublicSharePage() {
     );
 
     const brandColor = company?.primary_color || '#6366f1';
+    const brandFont = company?.brand_font || 'modernist';
+
+    // Font family mapping
+    const fontClass = {
+        'modernist': 'font-sans', // Outfit (default)
+        'luxury': 'font-serif',   // Playfair Display
+        'industrial': 'font-mono' // Space Mono
+    }[brandFont] || 'font-sans';
+
+    // CSS variables for specific font names
+    const fontStyles = brandFont === 'luxury'
+        ? { fontFamily: 'var(--font-playfair), serif' }
+        : brandFont === 'industrial'
+            ? { fontFamily: 'var(--font-space-mono), monospace' }
+            : { fontFamily: 'var(--font-outfit), sans-serif' };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-indigo-500/30 font-sans">
+        <div
+            className={`min-h-screen bg-[#050505] text-white selection:bg-indigo-500/30 ${fontClass}`}
+            style={fontStyles}
+        >
             {/* Background Glow */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] opacity-20 blur-[120px] rounded-full" style={{ backgroundColor: brandColor }} />

@@ -10,7 +10,8 @@ import {
     Palette as PaletteIcon,
     Save,
     Trash2,
-    Check
+    Check,
+    Type
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
@@ -28,7 +29,8 @@ export default function BrandingCenterPage() {
         contact_email: '',
         contact_phone: '',
         website: '',
-        primary_color: '#6366f1'
+        primary_color: '#6366f1',
+        brand_font: 'modernist'
     });
 
     useEffect(() => {
@@ -70,7 +72,8 @@ export default function BrandingCenterPage() {
                     contact_email: '',
                     contact_phone: '',
                     website: '',
-                    primary_color: '#6366f1'
+                    primary_color: '#6366f1',
+                    brand_font: 'modernist'
                 });
             }
         } catch (err) {
@@ -125,6 +128,7 @@ export default function BrandingCenterPage() {
                                         <div className="flex items-center gap-4 text-xs text-white/40 mt-1">
                                             {company.contact_email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {company.contact_email}</span>}
                                             {company.website && <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {company.website}</span>}
+                                            <span className="flex items-center gap-1"><Type className="w-3 h-3" /> {company.brand_font}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -181,6 +185,24 @@ export default function BrandingCenterPage() {
                                         onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
                                         className="w-full bg-white/5 border border-white/10 rounded-xl h-11 px-4 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                     />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-white/20">Brand Voice (Typography)</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['modernist', 'luxury', 'industrial'].map((f) => (
+                                            <button
+                                                key={f}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, brand_font: f })}
+                                                className={`h-11 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all ${formData.brand_font === f
+                                                        ? 'bg-white text-black border-white'
+                                                        : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                                                    }`}
+                                            >
+                                                {f}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="pt-4 flex gap-3">
                                     <Button
